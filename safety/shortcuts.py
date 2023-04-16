@@ -1,5 +1,5 @@
 from django.contrib.auth import get_user_model
-from django.contrib.auth.models import Permission
+from django.contrib.auth.models import Permission, Group
 
 from safety.models import ObjectPermission, PermissionGroup
 
@@ -64,11 +64,11 @@ def has_perm(entities: list, perm: str, obj=None) -> bool:
             return False
 
         if type(entities) == get_user_model():
-            return get_user_object_permission_model().objects.filter(permission__in=permission, to=entities,
+            return get_user_object_permission_model().objects.filter(permission=permission, to=entities,
                                                                      object_id=obj.id).exists()
-
-        return get_group_object_permission_model().objects.filter(permission__in=permission, to=entities,
-                                                                  object_id=obj.id).exists()
+        elif type(entities) == Group:
+            return get_group_object_permission_model().objects.filter(permission=permission, to=entities,
+                                                                      object_id=obj.id).exists()
 
 
 def has_gross_perm(users: list[get_user_model()], perm: str, obj=None) -> bool:
@@ -93,6 +93,9 @@ def has_gross_perm(users: list[get_user_model()], perm: str, obj=None) -> bool:
 
     for user in users:
         for group in user.groups.all():
+            if has_perm(group, perm, obj):
+                return True
+        for group in get_permission_group_model().objects.filter(users__in=[user], obj=obj):
             if has_perm(group, perm, obj):
                 return True
 
@@ -156,3 +159,24 @@ def lift_perm(entity, perm: str, obj=None) -> bool:
 
     group_obj_perm.delete()
     return True
+
+
+def create_perm_group(name: str, permissions: list[Permission], obj) -> Group:
+    """
+    Create a permission group.
+
+    Args:
+        name (string): The name of the group.
+        permissions: The permissions to add to the group.
+        obj: The object to add the group to.
+
+    Returns:
+        Group: The group object.
+    """
+
+    perm_group = get_permission_group_model().objects.get_or_create(name=name, target=obj)[0]
+
+    for permission in permissions:
+        perm_group.permissions.add(permission)
+
+    return perm_group
