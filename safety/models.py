@@ -22,8 +22,8 @@ class ObjectPermission(models.Model):
     object = GenericForeignKey('object_ct', 'object_id')
 
     class Meta:
-        verbose_name = _('User object permission')
-        verbose_name_plural = _('User object permissions')
+        verbose_name = _('User Object Permission')
+        verbose_name_plural = _('User Object Permissions')
         unique_together = (('to_ct', 'permission', 'object_ct', 'object_id'),)
 
     def __str__(self):
