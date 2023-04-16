@@ -180,3 +180,36 @@ def create_perm_group(name: str, permissions: list[Permission], obj) -> Group:
         perm_group.permissions.add(permission)
 
     return perm_group
+
+
+def add_user_to_perm_group(user: get_user_model(), name: str, obj) -> bool:
+    """
+    Add a user to a permission group.
+
+    Args:
+        user: The user to add to the group.
+        name: The name of the perm group.
+        obj: The object for the perm group.
+
+    Returns:
+        bool: True if the user was added to the group, otherwise False.
+    """
+
+    PermissionGroup.objects.get(name=name, target=obj).users.add(user)
+    return True
+
+
+def remove_user_from_perm_group(user: get_user_model(), name: str, obj) -> bool:
+    """
+    Remove a user from a permission group.
+
+    Args:
+        user: The user to remove from the group.
+        name: The name of the perm group.
+
+    Returns:
+        bool: True if the user was removed from the group, otherwise False.
+    """
+
+    PermissionGroup.objects.get(name=name, target=obj).users.remove(user)
+    return True
