@@ -1,16 +1,18 @@
 [tool.poetry]
 name = "django-safety"
 version = "0.1.0"
-description = ""
+description = "Adds object permissions to Django."
+license = "MIT"
 authors = ["William Ferreira <williammferreira@gmail.com>"]
 readme = "README.md"
-packages = [{include = "django_safety"}]
+packages = [{ include = "django_safety" }]
 
 [tool.poetry.dependencies]
 python = "^3.10"
 django = "^4.2"
+
+[tool.poetry.group.dev.dependencies]
 build = "^0.10.0"
-psycopg2-binary = "^2.9.6"
 
 
 [build-system]
