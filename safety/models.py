@@ -19,10 +19,6 @@ class ObjectPermissionAbstract(models.Model):
         verbose_name = _('User object permission')
         verbose_name_plural = _('User object permissions')
         unique_together = (('user', 'permission', 'object_ct', 'object_pk'),)
-        indexes = [
-            models.Index(fields=['user', 'permission']),
-            models.Index(fields=['object_ct', 'object_pk']),
-        ]
 
 
 class UserObjectPermission(ObjectPermissionAbstract, models.Model):
