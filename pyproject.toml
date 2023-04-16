@@ -9,6 +9,7 @@ packages = [{include = "django_safety"}]
 [tool.poetry.dependencies]
 python = "^3.10"
 django = "^4.2"
+build = "^0.10.0"
 
 
 [build-system]
