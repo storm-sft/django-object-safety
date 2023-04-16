@@ -26,6 +26,7 @@ def boot_django():
         ),
         TIME_ZONE="UTC",
         USE_TZ=True,
+        USE_I18N=True,
     )
 
     django.setup()

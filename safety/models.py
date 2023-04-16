@@ -14,11 +14,11 @@ class ObjectPermission(models.Model):
     to = GenericForeignKey('target_ct', 'target_id')
     to_id = models.CharField(_('Target ID'), max_length=255)
     to_ct = models.ForeignKey('contenttypes.ContentType', on_delete=models.CASCADE, verbose_name=_('Content Type'),
-                              limit_choices_to={'model__in': ('user', 'group')})
+                              limit_choices_to={'model__in': ('user', 'group')}, related_name='entity_of')
 
     object_id = models.IntegerField(_('Object ID'))
     object_ct = models.ForeignKey('contenttypes.ContentType', on_delete=models.CASCADE,
-                                  verbose_name=_('Target Content Type'))
+                                  verbose_name=_('Target Content Type'), related_name='object_of')
     object = GenericForeignKey('object_ct', 'object_id')
 
     class Meta:
