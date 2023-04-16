@@ -1,7 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Permission
 
-from safety.models import ObjectPermission
+from safety.models import ObjectPermission, PermissionGroup
 
 
 def get_user_object_permission_model():
@@ -21,6 +21,16 @@ def get_group_object_permission_model():
     """
 
     return ObjectPermission
+
+
+def get_permission_group_model():
+    """
+    Retrieves the permission group model.
+
+    TODO: Get model from settings
+    """
+
+    return PermissionGroup
 
 
 def has_perm(entities: list, perm: str, obj=None) -> bool:
