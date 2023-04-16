@@ -24,7 +24,7 @@ class ObjectPermission(models.Model):
     class Meta:
         verbose_name = _('User object permission')
         verbose_name_plural = _('User object permissions')
-        unique_together = (('to_ct', 'permission', 'object_ct', 'object_pk'),)
+        unique_together = (('to_ct', 'permission', 'object_ct', 'object_id'),)
 
     def __str__(self):
         return f'{self.to} has {self.permission} on {self.object}'
