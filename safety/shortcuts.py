@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Permission, Group
 
@@ -7,30 +8,27 @@ from safety.models import ObjectPermission, PermissionGroup
 def get_user_object_permission_model():
     """
     Retrieves the user model permission object.
-
-    TODO: Get model from settings
     """
-    return ObjectPermission
+    return settings.USER_OBJECT_PERMISSION_MODEL if hasattr(settings, 'USER_OBJECT_PERMISSION_MODEL') \
+        else ObjectPermission
 
 
 def get_group_object_permission_model():
     """
     Retrieves the group model permission object.
-
-    TODO: Get model from settings
     """
 
-    return ObjectPermission
+    return settings.GROUP_OBJECT_PERMISSION_MODEL if hasattr(settings, 'GROUP_OBJECT_PERMISSION_MODEL') \
+        else ObjectPermission
 
 
 def get_permission_group_model():
     """
     Retrieves the permission group model.
-
-    TODO: Get model from settings
     """
 
-    return PermissionGroup
+    return settings.PERMISSION_GROUP_MODEL if hasattr(settings, 'GROUP_OBJECT_PERMISSION_MODEL') \
+        else PermissionGroup
 
 
 def has_perm(entities: list, perm: str, obj=None) -> bool:
