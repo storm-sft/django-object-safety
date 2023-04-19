@@ -11,20 +11,20 @@ class ObjectPermission(models.Model):
 
     permission = models.ForeignKey('auth.Permission', on_delete=models.CASCADE, verbose_name=_('Permission'))
 
-    to = GenericForeignKey('target_ct', 'target_id')
+    to = GenericForeignKey('to_ct', 'to_id')
     to_id = models.CharField(_('Target ID'), max_length=255)
     to_ct = models.ForeignKey('contenttypes.ContentType', on_delete=models.CASCADE, verbose_name=_('Content Type'),
-                              limit_choices_to={'model__in': ('user', 'group')})
+                              limit_choices_to={'model__in': ('user', 'group')}, related_name='entity_of')
 
     object_id = models.IntegerField(_('Object ID'))
     object_ct = models.ForeignKey('contenttypes.ContentType', on_delete=models.CASCADE,
-                                  verbose_name=_('Target Content Type'))
+                                  verbose_name=_('Target Content Type'), related_name='object_of')
     object = GenericForeignKey('object_ct', 'object_id')
 
     class Meta:
-        verbose_name = _('User Object Permission')
-        verbose_name_plural = _('User Object Permissions')
-        unique_together = (('to_ct', 'permission', 'object_ct', 'object_id'),)
+        verbose_name = _('User object permission')
+        verbose_name_plural = _('User object permissions')
+        unique_together = (('to_ct', 'to_id', 'permission', 'object_ct', 'object_id'),)
 
     def __str__(self):
         return f'{self.to} has {self.permission} on {self.object}'
@@ -40,7 +40,7 @@ class PermissionGroup(models.Model):
     permissions = models.ManyToManyField('auth.Permission', verbose_name=_('Permissions'))
 
     target = GenericForeignKey('target_ct', 'target_id')
-    target_id = models.IntegerField(_('Target ID'))
+    target_id = models.IntegerField(_('Target ID'), null=True)
     target_ct = models.ForeignKey('contenttypes.ContentType', on_delete=models.CASCADE,
                                   verbose_name=_('Target Content Type'))
 

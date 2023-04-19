@@ -3,9 +3,11 @@ from unittest import TestSuite
 
 from boot_django import boot_django
 
+# from django.db.models import loading
+
 boot_django()
 
-default_labels = ["safety.tests", ]
+default_labels = ["safety", ]
 
 
 def get_suite(test_labels=None):

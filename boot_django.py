@@ -19,13 +19,14 @@ def boot_django():
             }
         },
 
-        INSTALLED_APPS=(
+        INSTALLED_APPS=[
             "safety",
             "django.contrib.auth",
             "django.contrib.contenttypes",
-        ),
+        ],
         TIME_ZONE="UTC",
         USE_TZ=True,
+        USE_I18N=True,
     )
 
     django.setup()
