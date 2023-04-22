@@ -8,7 +8,13 @@ from safety.models import ObjectPermission, ObjectGroup
 
 def get_object_permission_model(obj=None):
     """
-    Retrieves the user model permission object.
+    Retrieves the object permission model. If obj is provided, the Meta class of
+    that object will be checked for a custom object permission model.
+
+    Args:
+        obj: The model class or instance to check for a custom object permission model.
+    Returns:
+        An instance of an object permission model.
     """
 
     if obj and hasattr(obj._meta, 'object_permission_model'):
@@ -21,7 +27,13 @@ def get_object_permission_model(obj=None):
 
 def get_object_group_model(obj=None):
     """
-    Retrieves the permission group model.
+    Retrieves the object group model. If obj is provided, the Meta class of
+    that object will be checked for a custom Object Group model.
+
+    Args:
+        obj: The model class or instance to check for a custom Object Group model.
+    Returns:
+        An instance of an Object Group model.
     """
 
     if obj and hasattr(obj._meta, 'object_permission_model'):
