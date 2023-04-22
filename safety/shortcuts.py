@@ -3,24 +3,24 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Permission, Group
 from django.contrib.contenttypes.models import ContentType
 
-from safety.models import ObjectPermission, PermissionGroup
+from safety.models import ObjectPermission, ObjectGroup
 
 
 def get_object_permission_model():
     """
     Retrieves the user model permission object.
     """
-    return settings.SAFETY_OBJECT_PERMISSION_MODEL if hasattr(settings, 'USER_OBJECT_PERMISSION_MODEL') \
+    return settings.SAFETY_OBJECT_PERMISSION_MODEL if hasattr(settings, 'SAFETY_OBJECT_PERMISSION_MODEL') \
         else ObjectPermission
 
 
-def get_permission_group_model():
+def get_object_group_model():
     """
     Retrieves the permission group model.
     """
 
-    return settings.SAFETY_PERMISSION_GROUP_MODEL if hasattr(settings, 'GROUP_OBJECT_PERMISSION_MODEL') \
-        else PermissionGroup
+    return settings.SAFETY_PERMISSION_GROUP_MODEL if hasattr(settings, 'SAFETY_OBJECT_GROUP_MODEL') \
+        else ObjectGroup
 
 
 def has_perm(entities: list, perm: str, obj=None, content_type=None) -> bool:
@@ -66,9 +66,9 @@ def has_perm(entities: list, perm: str, obj=None, content_type=None) -> bool:
                                                                          object_id=obj.id).exists()
             # Check the PermissionGroup object
             if not all_have_perm:
-                all_have_perm = get_permission_group_model().objects.filter(target_id=obj.id,
-                                                                            permissions__in=[permission],
-                                                                            users__in=[entity]).exists()
+                all_have_perm = get_object_group_model().objects.filter(target_id=obj.id,
+                                                                        permissions__in=[permission],
+                                                                        users__in=[entity]).exists()
         elif isinstance(entity, Group):
             all_have_perm = get_object_permission_model().objects.filter(permission=permission, to_id=entity.id,
                                                                          to_ct=ContentType.objects.get_for_model(
@@ -102,7 +102,7 @@ def has_gross_perm(users: list[get_user_model()], perm: str, obj=None) -> bool:
         for group in user.groups.all():
             if has_perm(group, perm, obj):
                 return True
-        for group in get_permission_group_model().objects.filter(users__in=[user], obj=obj):
+        for group in get_object_group_model().objects.filter(users__in=[user], obj=obj):
             if has_perm(group, perm, obj):
                 return True
 
@@ -199,7 +199,7 @@ def lift_perm(entity, perm: str, obj=None, content_type: ContentType = None) -> 
     return True
 
 
-def get_perm_group(name: str, obj) -> PermissionGroup:
+def get_perm_group(name: str, obj) -> ObjectGroup:
     """
     Get a permission group.
 
@@ -211,11 +211,11 @@ def get_perm_group(name: str, obj) -> PermissionGroup:
         Group: The group object.
     """
 
-    return get_permission_group_model().objects.get(name=name, target_id=obj.id,
-                                                    target_ct=ContentType.objects.get_for_model(obj))
+    return get_object_group_model().objects.get(name=name, target_id=obj.id,
+                                                target_ct=ContentType.objects.get_for_model(obj))
 
 
-def create_perm_group(name: str, permissions: list[str], obj) -> PermissionGroup:
+def create_perm_group(name: str, permissions: list[str], obj) -> ObjectGroup:
     """
     Create a permission group.
 
@@ -228,8 +228,8 @@ def create_perm_group(name: str, permissions: list[str], obj) -> PermissionGroup
         Group: The group object.
     """
 
-    perm_group = get_permission_group_model().objects.create(name=name, target_id=obj.id,
-                                                             target_ct=ContentType.objects.get_for_model(obj))
+    perm_group = get_object_group_model().objects.create(name=name, target_id=obj.id,
+                                                         target_ct=ContentType.objects.get_for_model(obj))
 
     for permission in permissions:
         perm_group.permissions.add(Permission.objects.get(codename=permission))
@@ -249,8 +249,8 @@ def delete_perm_group(name: str, obj) -> bool:
         bool: True if the group was removed, otherwise False.
     """
 
-    group = get_permission_group_model().objects.filter(name=name, target_id=obj.id,
-                                                        target_ct=ContentType.objects.get_for_model(obj))
+    group = get_object_group_model().objects.filter(name=name, target_id=obj.id,
+                                                    target_ct=ContentType.objects.get_for_model(obj))
     if not group.exists():
         return False
 
@@ -271,8 +271,8 @@ def add_user_to_perm_group(user: get_user_model(), name: str, obj) -> bool:
         bool: True if the user was added to the group, otherwise False.
     """
 
-    get_permission_group_model().objects.get(name=name, target_id=obj.id,
-                                             target_ct=ContentType.objects.get_for_model(obj)).users.add(user)
+    get_object_group_model().objects.get(name=name, target_id=obj.id,
+                                         target_ct=ContentType.objects.get_for_model(obj)).users.add(user)
     return True
 
 
@@ -291,6 +291,6 @@ def remove_user_from_perm_group(user: get_user_model(), name: str, obj) -> bool:
 
     user.has_perm(name, obj)
 
-    PermissionGroup.objects.get(name=name, target_id=obj.id,
-                                target_ct=ContentType.objects.get_for_model(obj)).users.remove(user)
+    ObjectGroup.objects.get(name=name, target_id=obj.id,
+                            target_ct=ContentType.objects.get_for_model(obj)).users.remove(user)
     return True

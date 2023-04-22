@@ -37,7 +37,7 @@ class ObjectPermission(AbstractObjectPermission):
         swappable = 'SAFETY_OBJECT_PERMISSION_MODEL'
 
 
-class AbstractPermissionGroup(models.Model):
+class AbstractObjectGroup(models.Model):
     """
     A group of permissions for an object.
     """
@@ -58,9 +58,9 @@ class AbstractPermissionGroup(models.Model):
         return self.name
 
 
-class PermissionGroup(AbstractPermissionGroup):
+class ObjectGroup(AbstractObjectGroup):
     class Meta:
         verbose_name = _('Permission Group')
         verbose_name_plural = _('Permission Groups')
 
-        swappable = 'SAFETY_PERMISSION_GROUP_MODEL'
+        swappable = 'SAFETY_OBJECT_GROUP_MODEL'
