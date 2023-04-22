@@ -24,6 +24,8 @@ def boot_django():
             "django.contrib.auth",
             "django.contrib.contenttypes",
         ],
+
+        SAFETY_PERMISSION_GROUP_MODEL="safety.PermissionGroup",
         TIME_ZONE="UTC",
         USE_TZ=True,
         USE_I18N=True,
