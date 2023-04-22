@@ -17,6 +17,8 @@ def get_object_permission_model(obj=None):
         An instance of an object permission model.
     """
 
+    # pylint: disable-next=protected-access
+    # noinspection PyProtectedMember
     if obj and hasattr(obj._meta, 'object_permission_model'):
         return obj.object_permission_model
 
@@ -36,6 +38,8 @@ def get_object_group_model(obj=None):
         An instance of an Object Group model.
     """
 
+    # pylint: disable-next=protected-access
+    # noinspection PyProtectedMember
     if obj and hasattr(obj._meta, 'object_permission_model'):
         return obj.object_permission_model
 
