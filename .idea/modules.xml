@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/django_safety.iml" filepath="$PROJECT_DIR$/.idea/django_safety.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../django_object_safety/.idea/django_object_safety.iml" filepath="$PROJECT_DIR$/../django_object_safety/.idea/django_object_safety.iml" />
     </modules>
   </component>
 </project>
