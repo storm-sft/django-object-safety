@@ -4,7 +4,7 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 
-class ObjectPermission(models.Model):
+class AbstractObjectPermission(models.Model):
     """
     Contains the fields that are common to both user and group object permissions.
     """
@@ -22,15 +22,22 @@ class ObjectPermission(models.Model):
     object = GenericForeignKey('object_ct', 'object_id')
 
     class Meta:
-        verbose_name = _('User object permission')
-        verbose_name_plural = _('User object permissions')
         unique_together = (('to_ct', 'to_id', 'permission', 'object_ct', 'object_id'),)
+        abstract = True
 
     def __str__(self):
         return f'{self.to} has {self.permission} on {self.object}'
 
 
-class PermissionGroup(models.Model):
+class ObjectPermission(AbstractObjectPermission):
+    class Meta(AbstractObjectPermission.Meta):
+        verbose_name = _('User Object Permission')
+        verbose_name_plural = _('User Object Permissions')
+
+        swappable = 'SAFETY_OBJECT_PERMISSION_MODEL'
+
+
+class AbstractPermissionGroup(models.Model):
     """
     A group of permissions for an object.
     """
@@ -45,8 +52,15 @@ class PermissionGroup(models.Model):
                                   verbose_name=_('Target Content Type'))
 
     class Meta:
-        verbose_name = _('Permission Group')
-        verbose_name_plural = _('Permission Groups')
+        abstract = True
 
     def __str__(self):
         return self.name
+
+
+class PermissionGroup(AbstractPermissionGroup):
+    class Meta:
+        verbose_name = _('Permission Group')
+        verbose_name_plural = _('Permission Groups')
+
+        swappable = 'SAFETY_PERMISSION_GROUP_MODEL'
