@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "django-object-safety"
-version = "0.1.2"
+version = "0.1.4"
 description = "Adds object permissions to Django."
 license = "MIT"
 authors = ["William Ferreira"]
