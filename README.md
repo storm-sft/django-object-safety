@@ -1,3 +1,3 @@
-# Adds object permissions and object groups to django.
+## Implements object permissions and groups in django
 
-## View the documentation at http://django-guardian.readthedocs.org/en/latest/
+View the documentation at http://django-guardian.readthedocs.org/en/latest/
