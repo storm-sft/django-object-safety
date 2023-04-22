@@ -25,21 +25,4 @@ class Migration(migrations.Migration):
             name='object_id',
             field=models.IntegerField(verbose_name='Object ID'),
         ),
-        migrations.CreateModel(
-            name='PermissionGroup',
-            fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=255, verbose_name='Name')),
-                ('target_id', models.IntegerField(verbose_name='Target ID')),
-                ('permissions', models.ManyToManyField(to='auth.permission', verbose_name='Permissions')),
-                ('target_ct',
-                 models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='contenttypes.contenttype',
-                                   verbose_name='Target Content Type')),
-                ('users', models.ManyToManyField(to=settings.AUTH_USER_MODEL, verbose_name='Users')),
-            ],
-            options={
-                'verbose_name': 'Permission Group',
-                'verbose_name_plural': 'Permission Groups',
-            },
-        ),
     ]
