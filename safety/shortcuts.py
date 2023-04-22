@@ -6,20 +6,29 @@ from django.contrib.contenttypes.models import ContentType
 from safety.models import ObjectPermission, ObjectGroup
 
 
-def get_object_permission_model():
+def get_object_permission_model(obj=None):
     """
     Retrieves the user model permission object.
     """
-    return settings.SAFETY_OBJECT_PERMISSION_MODEL if hasattr(settings, 'SAFETY_OBJECT_PERMISSION_MODEL') \
+
+    if obj and hasattr(obj._meta, 'object_permission_model'):
+        return obj.object_permission_model
+
+    return ContentType.objects.get_model(settings.SAFETY_OBJECT_PERMISSION_MODEL) if hasattr(settings,
+                                                                                             'SAFETY_OBJECT_PERMISSION_MODEL') \
         else ObjectPermission
 
 
-def get_object_group_model():
+def get_object_group_model(obj=None):
     """
     Retrieves the permission group model.
     """
 
-    return settings.SAFETY_PERMISSION_GROUP_MODEL if hasattr(settings, 'SAFETY_OBJECT_GROUP_MODEL') \
+    if obj and hasattr(obj._meta, 'object_permission_model'):
+        return obj.object_permission_model
+
+    return ContentType.objects.get_model(settings.SAFETY_PERMISSION_GROUP_MODEL) if hasattr(settings,
+                                                                                            'SAFETY_OBJECT_GROUP_MODEL') \
         else ObjectGroup
 
 
@@ -60,20 +69,20 @@ def has_perm(entities: list, perm: str, obj=None, content_type=None) -> bool:
             return False
 
         if isinstance(entity, get_user_model()):
-            all_have_perm = get_object_permission_model().objects.filter(permission=permission, to_id=entity.id,
-                                                                         to_ct=ContentType.objects.get_for_model(
-                                                                             entity),
-                                                                         object_id=obj.id).exists()
+            all_have_perm = get_object_permission_model(obj).objects.filter(permission=permission, to_id=entity.id,
+                                                                            to_ct=ContentType.objects.get_for_model(
+                                                                                entity),
+                                                                            object_id=obj.id).exists()
             # Check the PermissionGroup object
             if not all_have_perm:
                 all_have_perm = get_object_group_model().objects.filter(target_id=obj.id,
                                                                         permissions__in=[permission],
                                                                         users__in=[entity]).exists()
         elif isinstance(entity, Group):
-            all_have_perm = get_object_permission_model().objects.filter(permission=permission, to_id=entity.id,
-                                                                         to_ct=ContentType.objects.get_for_model(
-                                                                             entity),
-                                                                         object_id=obj.id).exists()
+            all_have_perm = get_object_permission_model(obj).objects.filter(permission=permission, to_id=entity.id,
+                                                                            to_ct=ContentType.objects.get_for_model(
+                                                                                entity),
+                                                                            object_id=obj.id).exists()
 
     return all_have_perm
 
@@ -139,16 +148,16 @@ def set_perm(entity: get_user_model() | Group, perm: str, obj: any = None, conte
     permission = Permission.objects.get(codename=perm, content_type=ContentType.objects.get_for_model(obj))
 
     if isinstance(entity, get_user_model()):
-        get_object_permission_model().objects.get_or_create(permission=permission, to_id=entity.id,
-                                                            to_ct=ContentType.objects.get_for_model(entity),
-                                                            object_id=obj.id,
-                                                            object_ct=ContentType.objects.get_for_model(obj))
+        get_object_permission_model(obj).objects.get_or_create(permission=permission, to_id=entity.id,
+                                                               to_ct=ContentType.objects.get_for_model(entity),
+                                                               object_id=obj.id,
+                                                               object_ct=ContentType.objects.get_for_model(obj))
         return True
     elif isinstance(entity, Group):
-        get_object_permission_model().objects.get_or_create(permission=permission, to_id=entity.id,
-                                                            to_ct=ContentType.objects.get_for_model(entity),
-                                                            object_id=obj.id,
-                                                            object_ct=ContentType.objects.get_for_model(obj))
+        get_object_permission_model(obj).objects.get_or_create(permission=permission, to_id=entity.id,
+                                                               to_ct=ContentType.objects.get_for_model(entity),
+                                                               object_id=obj.id,
+                                                               object_ct=ContentType.objects.get_for_model(obj))
         return True
 
     return False
@@ -174,12 +183,12 @@ def lift_perm(entity, perm: str, obj=None, content_type: ContentType = None) -> 
     permission = Permission.objects.get(codename=perm, content_type=ContentType.objects.get_for_model(obj))
 
     if type(entity) == get_user_model():
-        user_obj_perm = get_object_permission_model().objects.filter(permission=permission, to_id=entity.id,
-                                                                     to_ct=ContentType.objects.get_for_model(
-                                                                         entity),
-                                                                     object_id=obj.id,
-                                                                     object_ct=ContentType.objects.get_for_model(
-                                                                         obj))
+        user_obj_perm = get_object_permission_model(obj).objects.filter(permission=permission, to_id=entity.id,
+                                                                        to_ct=ContentType.objects.get_for_model(
+                                                                            entity),
+                                                                        object_id=obj.id,
+                                                                        object_ct=ContentType.objects.get_for_model(
+                                                                            obj))
 
         if not user_obj_perm.exists():
             return False
@@ -187,11 +196,11 @@ def lift_perm(entity, perm: str, obj=None, content_type: ContentType = None) -> 
         user_obj_perm.delete()
         return True
 
-    group_obj_perm = get_object_permission_model().objects.filter(permission=permission, to_id=entity.id,
-                                                                  to_ct=ContentType.objects.get_for_model(entity),
-                                                                  object_id=obj.id,
-                                                                  object_ct=ContentType.objects.get_for_model(obj)
-                                                                  ).delete()
+    group_obj_perm = get_object_permission_model(obj).objects.filter(permission=permission, to_id=entity.id,
+                                                                     to_ct=ContentType.objects.get_for_model(entity),
+                                                                     object_id=obj.id,
+                                                                     object_ct=ContentType.objects.get_for_model(obj)
+                                                                     ).delete()
     if not group_obj_perm.exists():
         return False
 
