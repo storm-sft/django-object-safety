@@ -12,8 +12,8 @@ packages = [{ include = "safety" }]
 include = ["LICENSE"]
 
 [tool.poetry.dependencies]
-python = "^3.10"
-django = "^4.2"
+python = ">3.7"
+django = ">3.2"
 
 [tool.poetry.group.dev.dependencies]
 build = "^0.10.0"
