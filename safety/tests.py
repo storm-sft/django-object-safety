@@ -5,8 +5,8 @@ from django.db import models
 from django.test import TransactionTestCase
 from django_fake_model import models as f
 
-from safety.shortcuts import set_perm, has_perm, lift_perm, create_perm_group, delete_perm_group, \
-    add_user_to_perm_group, remove_user_from_perm_group
+from safety.shortcuts import set_perm, has_perm, lift_perm, create_object_group, delete_object_group, \
+    add_user_to_object_group, remove_user_from_object_group
 
 
 class FakePost(f.FakeModel):
@@ -105,39 +105,39 @@ class TestPermissionGroup(TransactionTestCase):
         self.fake_post_ct = ContentType.objects.get_for_model(FakePost)
 
     def test_create_permission_group(self):
-        create_perm_group("editors",
-                          ["view_fakepost", "change_fakepost", "delete_fakepost"],
-                          self.posts[0])
-        add_user_to_perm_group(self.users[0], "editors", self.posts[0])
+        create_object_group("editors",
+                            ["view_fakepost", "change_fakepost", "delete_fakepost"],
+                            self.posts[0])
+        add_user_to_object_group(self.users[0], "editors", self.posts[0])
 
         self.assertTrue(has_perm([self.users[0]], "change_fakepost", self.posts[0]))
 
     def test_delete_permission_group(self):
-        create_perm_group("editors",
-                          ["view_fakepost", "change_fakepost", "delete_fakepost"],
-                          self.posts[0])
+        create_object_group("editors",
+                            ["view_fakepost", "change_fakepost", "delete_fakepost"],
+                            self.posts[0])
 
-        delete_perm_group("editors", self.posts[0])
+        delete_object_group("editors", self.posts[0])
 
         self.assertFalse(has_perm([self.users[0]], "change_fakepost", self.posts[0]))
 
     def test_remove_user_from_permission_group(self):
-        create_perm_group("editors",
-                          ["view_fakepost", "change_fakepost", "delete_fakepost"],
-                          self.posts[0])
+        create_object_group("editors",
+                            ["view_fakepost", "change_fakepost", "delete_fakepost"],
+                            self.posts[0])
 
-        add_user_to_perm_group(self.users[0], "editors", self.posts[0])
+        add_user_to_object_group(self.users[0], "editors", self.posts[0])
 
-        remove_user_from_perm_group(self.users[0], "editors", self.posts[0])
+        remove_user_from_object_group(self.users[0], "editors", self.posts[0])
 
         self.assertFalse(has_perm([self.users[0]], "change_fakepost", self.posts[0]))
 
     def test_remove_permission_on_delete(self):
-        create_perm_group("editors",
-                          ["view_fakepost", "change_fakepost", "delete_fakepost"],
-                          self.posts[0])
+        create_object_group("editors",
+                            ["view_fakepost", "change_fakepost", "delete_fakepost"],
+                            self.posts[0])
 
-        add_user_to_perm_group(self.users[0], "editors", self.posts[0])
+        add_user_to_object_group(self.users[0], "editors", self.posts[0])
 
         post = self.posts[0]
 

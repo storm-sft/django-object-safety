@@ -240,9 +240,9 @@ def get_perm_group(name: str, obj) -> ObjectGroup:
                                                 target_ct=ContentType.objects.get_for_model(obj))
 
 
-def create_perm_group(name: str, permissions: list[str], obj) -> ObjectGroup:
+def create_object_group(name: str, permissions: list[str], obj) -> ObjectGroup:
     """
-    Create a permission group.
+    Create a object group.
 
     Args:
         name (string): The name of the group.
@@ -262,9 +262,9 @@ def create_perm_group(name: str, permissions: list[str], obj) -> ObjectGroup:
     return perm_group
 
 
-def delete_perm_group(name: str, obj) -> bool:
+def delete_object_group(name: str, obj) -> bool:
     """
-    Remove a permission group.
+    Remove a object group.
 
     Args:
         name (string): The name of the group.
@@ -283,9 +283,9 @@ def delete_perm_group(name: str, obj) -> bool:
     return True
 
 
-def add_user_to_perm_group(user: get_user_model(), name: str, obj) -> bool:
+def add_user_to_object_group(user: get_user_model(), name: str, obj) -> bool:
     """
-    Add a user to a permission group.
+    Add a user to a object group.
 
     Args:
         user: The user to add to the group.
@@ -301,9 +301,9 @@ def add_user_to_perm_group(user: get_user_model(), name: str, obj) -> bool:
     return True
 
 
-def remove_user_from_perm_group(user: get_user_model(), name: str, obj) -> bool:
+def remove_user_from_object_group(user: get_user_model(), name: str, obj) -> bool:
     """
-    Remove a user from a permission group.
+    Remove a user from a object group.
 
     Args:
         user: The user to remove from the group.
