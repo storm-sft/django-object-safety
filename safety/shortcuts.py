@@ -224,9 +224,9 @@ def lift_perm(entity, perm: str, obj=None, content_type: ContentType = None) -> 
     return True
 
 
-def get_object_group(name: str, obj) -> ObjectGroup:
+def retrieve_object_group(name: str, obj) -> ObjectGroup:
     """
-    Get a object group.
+    Get an object group.
 
     Args:
         name (string): The name of the group.
