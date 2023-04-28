@@ -6,7 +6,8 @@ from django.test import TransactionTestCase
 from django_fake_model import models as f
 
 from safety.shortcuts import set_perm, has_perm, lift_perm, create_object_group, delete_object_group, \
-    add_user_to_object_group, remove_user_from_object_group
+    add_user_to_object_group, remove_user_from_object_group, get_users_with_perms, get_groups_with_perms, \
+    retrieve_object_group
 
 
 class FakePost(f.FakeModel):
@@ -88,9 +89,60 @@ class TestObjectPermission(TransactionTestCase):
 
         self.assertFalse(has_perm([self.users[0]], "view_fakepost", self.posts[0]))
 
+    def test_get_users_with_perms(self):
+        set_perm(self.users[0], "view_fakepost", self.posts[0])
+        set_perm(self.users[1], "view_fakepost", self.posts[0])
+
+        self.assertQuerySetEqual(get_users_with_perms("view_fakepost", self.posts[0]), [self.users[0], self.users[1]])
+
+    def test_get_users_with_perms_global(self):
+        set_perm(self.users[0], "view_fakepost", content_type=self.fake_post_ct)
+        set_perm(self.users[1], "view_fakepost", content_type=self.fake_post_ct)
+
+        self.assertListEqual(get_users_with_perms("view_fakepost", content_type=self.fake_post_ct),
+                             [self.users[0], self.users[1]])
+
+    def test_get_users_with_group_perms(self):
+        create_object_group("editors", ["view_fakepost"], self.posts[0])
+        add_user_to_object_group(self.users[0], "editors", self.posts[0])
+
+        self.assertListEqual(get_users_with_perms("view_fakepost", self.posts[0], with_group_users=True),
+                             [self.users[0]])
+
+    def test_get_users_with_group_perms_global(self):
+        group = Group.objects.create(name="editors")
+        group.permissions.add(Permission.objects.get(codename="view_fakepost", content_type=self.fake_post_ct))
+        self.users[0].groups.add(group)
+        self.users[1].groups.add(group)
+
+        self.assertListEqual(get_users_with_perms("view_fakepost", content_type=self.fake_post_ct,
+                                                  with_group_users=True), [self.users[0], self.users[1]])
+
+    def test_get_users_with_group_perms_global_with_group_users(self):
+        create_object_group("editors", ["view_fakepost"], self.posts[0])
+        add_user_to_object_group(self.users[0], "editors", self.posts[0])
+
+        self.assertListEqual(get_users_with_perms("view_fakepost", self.posts[0], with_group_users=True),
+                             [self.users[0]])
+
+    def test_get_groups_with_perms(self):
+        set_perm(self.groups[0], "view_fakepost", self.posts[0])
+        set_perm(self.groups[1], "view_fakepost", self.posts[0])
+
+        self.assertListEqual(get_groups_with_perms("view_fakepost", self.fake_post_ct, self.posts[0]),
+                             [self.groups[0], self.groups[1]])
+
+    def test_get_groups_with_perms_global(self):
+        set_perm(self.groups[0], "view_fakepost", content_type=self.fake_post_ct)
+        set_perm(self.groups[1], "view_fakepost", content_type=self.fake_post_ct)
+
+        self.assertListEqual(
+            get_groups_with_perms("view_fakepost", content_type=self.fake_post_ct),
+            [self.groups[0], self.groups[1]])
+
 
 @FakePost.fake_me
-class TestPermissionGroup(TransactionTestCase):
+class TestObjectGroup(TransactionTestCase):
     def setUp(self):
         self.users = []
         self.users.append(get_user_model().objects.create_user(username="TestUser", password="TestPassword"))
@@ -104,7 +156,7 @@ class TestPermissionGroup(TransactionTestCase):
 
         self.fake_post_ct = ContentType.objects.get_for_model(FakePost)
 
-    def test_create_permission_group(self):
+    def test_create_object_group(self):
         create_object_group("editors",
                             ["view_fakepost", "change_fakepost", "delete_fakepost"],
                             self.posts[0])
@@ -112,7 +164,7 @@ class TestPermissionGroup(TransactionTestCase):
 
         self.assertTrue(has_perm([self.users[0]], "change_fakepost", self.posts[0]))
 
-    def test_delete_permission_group(self):
+    def test_delete_object_group(self):
         create_object_group("editors",
                             ["view_fakepost", "change_fakepost", "delete_fakepost"],
                             self.posts[0])
@@ -121,7 +173,23 @@ class TestPermissionGroup(TransactionTestCase):
 
         self.assertFalse(has_perm([self.users[0]], "change_fakepost", self.posts[0]))
 
-    def test_remove_user_from_permission_group(self):
+    def test_retrieve_object_group(self):
+        create_object_group("editors",
+                            ["view_fakepost", "change_fakepost", "delete_fakepost"],
+                            self.posts[0])
+
+        self.assertTrue(retrieve_object_group("editors", self.posts[0]))
+
+    def test_add_user_to_object_group(self):
+        create_object_group("editors",
+                            ["view_fakepost", "change_fakepost", "delete_fakepost"],
+                            self.posts[0])
+
+        add_user_to_object_group(self.users[0], "editors", self.posts[0])
+
+        self.assertTrue(has_perm([self.users[0]], "change_fakepost", self.posts[0]))
+
+    def test_remove_user_from_object_group(self):
         create_object_group("editors",
                             ["view_fakepost", "change_fakepost", "delete_fakepost"],
                             self.posts[0])
@@ -132,7 +200,7 @@ class TestPermissionGroup(TransactionTestCase):
 
         self.assertFalse(has_perm([self.users[0]], "change_fakepost", self.posts[0]))
 
-    def test_remove_permission_on_delete(self):
+    def test_remove_object_group_on_delete(self):
         create_object_group("editors",
                             ["view_fakepost", "change_fakepost", "delete_fakepost"],
                             self.posts[0])

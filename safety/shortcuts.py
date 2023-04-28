@@ -1,3 +1,7 @@
+import itertools
+from functools import reduce
+from operator import concat
+
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Permission, Group
@@ -156,9 +160,14 @@ def set_perm(entity: get_user_model() | Group, perm: str, obj: any = None, conte
 
         permission = Permission.objects.get(codename=perm, content_type=content_type)
 
-        entity.user_permissions.add(
-            permission
-        )
+        if isinstance(entity, get_user_model()):
+            entity.user_permissions.add(
+                permission
+            )
+        elif isinstance(entity, Group):
+            entity.permissions.add(
+                permission
+            )
         return True
 
     permission = Permission.objects.get(codename=perm, content_type=ContentType.objects.get_for_model(obj))
@@ -222,6 +231,137 @@ def lift_perm(entity, perm: str, obj=None, content_type: ContentType = None) -> 
 
     group_obj_perm.delete()
     return True
+
+
+def get_perms(entity, obj=None) -> list[str]:
+    """
+    Get the permissions for a user or group.
+
+    Args:
+        entity: The user or group to get the permissions for.
+        obj: The object to get the permissions on.
+    """
+
+    if obj is None:
+        return [perm.codename for perm in
+                (entity.user_permissions.all() if isinstance(entity, get_user_model()) else entity.permissions.all())]
+
+    return [perm.permission.codename for perm in get_object_permission_model(obj).objects.filter(
+        to_id=entity.id,
+        to_ct=ContentType.objects.get_for_model(entity),
+        object_id=obj.id,
+        object_ct=ContentType.objects.get_for_model(obj)
+    )]
+
+
+def get_gross_perms(entity, obj=None) -> list[str]:
+    """
+    Get the permissions for a user or group, including permissions from groups.
+
+    Args:
+        entity: The user or group to get the permissions for.
+        obj: The object to get the permissions on.
+    """
+
+    if obj is None:
+        return get_perms(entity) + list(
+            reduce(concat,
+                   [[permission.codename for permission in group.permissions] for group in entity.groups]
+                   )
+        )
+
+    return get_perms(entity, obj) + [perm.permission.codename for perm in get_object_group_model(obj).objects.filter(
+        users__in=[entity],
+        object=obj,
+    )]
+
+
+def get_users_with_perms(perms, obj=None, content_type=None, with_group_users=True) -> \
+        list[get_user_model()]:
+    """
+    Get all users that have the specified permission(s).
+
+    Args:
+        perms: A list of permissions to check.
+        obj: The object to check the permissions on.
+        with_group_users: Include users in groups that have the permission in the result.
+        content_type (ContentType): The ContentType of the object.
+
+    Returns:
+        list[User]: A list of users that have the permission.
+    """
+
+    if not isinstance(perms, list):
+        perms = [perms]
+
+    if obj is None:
+        if content_type is None:
+            raise ValueError("Content type must be provided if obj is None.")
+
+        permissions = get_user_model().objects.filter(
+            user_permissions__codename__in=perms,
+            user_permissions__content_type=content_type,
+        ).distinct()
+
+        if with_group_users:
+            permissions = list(permissions) + list(get_user_model().objects.filter(
+                groups__permissions__codename__in=perms,
+                groups__permissions__content_type=content_type,
+            ).distinct())
+
+        return permissions
+
+    permissions = get_object_permission_model(obj).objects.filter(
+        permission__codename__in=perms,
+    )
+
+    users = list(
+        [permission.to for permission in permissions.filter(to_ct=ContentType.objects.get_for_model(get_user_model()))]
+    )
+
+    if with_group_users:
+        if obj is None:
+            groups = Group.objects.filter(groups__permissions__codename__in=perms)
+        else:
+            groups = get_object_group_model(obj).objects.filter(permissions__codename__in=perms, target_id=obj.id,
+                                                                target_ct=ContentType.objects.get_for_model(obj))
+        users += itertools.chain(*[list(group.users.all()) for group in groups])
+
+    return users
+
+
+def get_groups_with_perms(perms: list[str] | str, content_type: ContentType, obj=None) -> list[Group]:
+    """
+    Get all groups that have the specified permission(s).
+
+    Args:
+        perms (list[str] | str): Permission string(s) to check.
+        content_type (ContentType): The content type of the model that holds the permissions.
+        obj: The object, if checking for object permissions.
+
+    Returns:
+        list[Group]: A list of groups that have the permission.
+    """
+
+    if not isinstance(perms, list):
+        perms = [perms]
+
+    if obj is None and content_type is None:
+        raise ValueError("Content type must be provided if obj is None.")
+
+    if obj is None:
+        return list(Group.objects.filter(permissions__codename__in=perms, permissions__content_type=content_type))
+
+    ct = content_type if content_type else ContentType.objects.get_for_model(obj)
+
+    permissions = get_object_permission_model(obj).objects.filter(permission__codename__in=perms,
+                                                                  permission__content_type=ct,
+                                                                  object_ct=ct,
+                                                                  object_id=obj.id,
+                                                                  to_ct=ContentType.objects.get_for_model(Group),
+                                                                  ).distinct()
+
+    return [perm.to for perm in permissions]
 
 
 def retrieve_object_group(name: str, obj) -> ObjectGroup:
