@@ -1,10 +1,10 @@
 [tool.poetry]
 name = "django-object-safety"
-version = "0.4.0"
+version = "1.1.2"
 description = "Adds object permissions to Django."
 license = "MIT"
 authors = ["William Ferreira"]
-homepage = "https://django-object-safety-docs.readthedocs.io/"
+homepage = "https://django-object-safety-docs.readthedocs.io/en/latest/"
 repository = "https://github.com/williammferreira/django-object-safety/"
 keywords = ["django", "permissions", "object-permissions", "django-permissions", "django-object-permissions"]
 readme = "README.md"
@@ -12,8 +12,8 @@ packages = [{ include = "safety" }]
 include = ["LICENSE"]
 
 [tool.poetry.dependencies]
-python = ">3.7"
-django = ">3.2"
+python = "^3.10"
+django = "^4.2"
 
 [tool.poetry.group.dev.dependencies]
 build = "^0.10.0"

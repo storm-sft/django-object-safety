@@ -7,7 +7,7 @@ from django_fake_model import models as f
 
 from safety.shortcuts import set_perm, has_perm, lift_perm, create_object_group, delete_object_group, \
     add_user_to_object_group, remove_user_from_object_group, get_users_with_perms, get_groups_with_perms, \
-    retrieve_object_group
+    retrieve_object_group, get_objects_for_entity
 
 
 class FakePost(f.FakeModel):
@@ -139,6 +139,14 @@ class TestObjectPermission(TransactionTestCase):
         self.assertListEqual(
             get_groups_with_perms("view_fakepost", content_type=self.fake_post_ct),
             [self.groups[0], self.groups[1]])
+
+    def test_get_objects_for_entity(self):
+        set_perm(self.users[0], "view_fakepost", self.posts[0])
+        set_perm(self.users[0], "view_fakepost", self.posts[1])
+
+        self.assertQuerySetEqual(
+            get_objects_for_entity(self.users[0], "view_fakepost", ct=ContentType.objects.get_for_model(FakePost)),
+            self.posts)
 
 
 @FakePost.fake_me
