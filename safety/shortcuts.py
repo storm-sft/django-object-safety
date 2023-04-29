@@ -276,7 +276,7 @@ def get_gross_perms(entity, obj=None) -> list[str]:
     )]
 
 
-def get_users_with_perms(perms, obj=None, content_type=None, with_group_users=True) -> \
+def get_users_with_perms(perms, obj=None, content_type=None, with_group_users=False) -> \
         list[get_user_model()]:
     """
     Get all users that have the specified permission(s).
@@ -390,12 +390,17 @@ def get_objects_for_entity(entity: get_user_model() | Group, permissions: list[s
     )
 
     if with_group_users:
-        perms = perms | get_object_permission_model().objects.filter(
-            to_ct=ContentType.objects.get_for_model(Group),
-            to_id__in=[group.id for group in entity.groups.all()],
-            permission__codename__in=permissions,
-            permission__content_type=ct,
-        )
+        obj_accesses = list(perms) + list(get_object_group_model().objects.filter(users__in=[entity]))
+
+        objs = []
+
+        for perm in obj_accesses:
+            if isinstance(perm, get_object_permission_model(ct.model_class())):
+                objs.append(perm.object)
+            elif isinstance(perm, get_object_group_model(ct.model_class())):
+                objs.append(perm.target)
+
+        return objs
 
     return [perm.object for perm in perms]
 
@@ -429,11 +434,13 @@ def create_object_group(name: str, permissions: list[str], obj) -> ObjectGroup:
         Group: The group object.
     """
 
+    ct = ContentType.objects.get_for_model(obj)
+
     perm_group = get_object_group_model().objects.create(name=name, target_id=obj.id,
-                                                         target_ct=ContentType.objects.get_for_model(obj))
+                                                         target_ct=ct)
 
     for permission in permissions:
-        perm_group.permissions.add(Permission.objects.get_or_create(codename=permission)[0].id)
+        perm_group.permissions.add(Permission.objects.get_or_create(codename=permission, content_type=ct)[0].id)
 
     return perm_group
 
