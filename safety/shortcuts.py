@@ -45,7 +45,7 @@ def get_object_group_model(obj=None):
     # pylint: disable-next=protected-access
     # noinspection PyProtectedMember
     if obj and hasattr(obj._meta, 'object_permission_model'):
-        return obj.object_permission_model
+        return obj.object_group_model
 
     return ContentType.objects.get_model(settings.SAFETY_PERMISSION_GROUP_MODEL) \
         if hasattr(settings, 'SAFETY_OBJECT_GROUP_MODEL') \
