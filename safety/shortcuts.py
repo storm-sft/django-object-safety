@@ -26,8 +26,8 @@ def get_object_permission_model(obj=None):
     if obj and hasattr(obj._meta, 'object_permission_model'):
         return obj.object_permission_model
 
-    return ContentType.objects.get_model(settings.SAFETY_OBJECT_PERMISSION_MODEL) if hasattr(settings,
-                                                                                             'SAFETY_OBJECT_PERMISSION_MODEL') \
+    return ContentType.objects.get_model(settings.SAFETY_OBJECT_PERMISSION_MODEL) \
+        if hasattr(settings, 'SAFETY_OBJECT_PERMISSION_MODEL') \
         else ObjectPermission
 
 
@@ -47,8 +47,8 @@ def get_object_group_model(obj=None):
     if obj and hasattr(obj._meta, 'object_permission_model'):
         return obj.object_permission_model
 
-    return ContentType.objects.get_model(settings.SAFETY_PERMISSION_GROUP_MODEL) if hasattr(settings,
-                                                                                            'SAFETY_OBJECT_GROUP_MODEL') \
+    return ContentType.objects.get_model(settings.SAFETY_PERMISSION_GROUP_MODEL) \
+        if hasattr(settings, 'SAFETY_OBJECT_GROUP_MODEL') \
         else ObjectGroup
 
 
@@ -405,7 +405,7 @@ def retrieve_object_group(name: str, obj) -> ObjectGroup:
 
 def create_object_group(name: str, permissions: list[str], obj) -> ObjectGroup:
     """
-    Create a object group.
+    Create an object group.
 
     Args:
         name (string): The name of the group.
@@ -427,7 +427,7 @@ def create_object_group(name: str, permissions: list[str], obj) -> ObjectGroup:
 
 def delete_object_group(name: str, obj) -> bool:
     """
-    Remove a object group.
+    Remove an object group.
 
     Args:
         name (string): The name of the group.
@@ -448,7 +448,7 @@ def delete_object_group(name: str, obj) -> bool:
 
 def add_user_to_object_group(user: get_user_model(), name: str, obj) -> bool:
     """
-    Add a user to a object group.
+    Add a user to an object group.
 
     Args:
         user: The user to add to the group.
@@ -466,7 +466,7 @@ def add_user_to_object_group(user: get_user_model(), name: str, obj) -> bool:
 
 def remove_user_from_object_group(user: get_user_model(), name: str, obj) -> bool:
     """
-    Remove a user from a object group.
+    Remove a user from an object group.
 
     Args:
         user: The user to remove from the group.
