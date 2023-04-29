@@ -364,7 +364,8 @@ def get_groups_with_perms(perms: list[str] | str, content_type: ContentType, obj
     return [perm.to for perm in permissions]
 
 
-def get_objects_for_entity(entity: get_user_model() | Group, permissions: list[str] | str, ct: ContentType) -> \
+def get_objects_for_entity(entity: get_user_model() | Group, permissions: list[str] | str, ct: ContentType,
+                           with_group_users=True) -> \
         list[any]:
     """
     Get all objects that the user has the specified permissions on.
@@ -372,7 +373,11 @@ def get_objects_for_entity(entity: get_user_model() | Group, permissions: list[s
         entity: The user that has access to the objects.
         permissions (list[str]): The permissions required.
         ct (ContentType): The content type of the objects.
+        with_group_users (bool): Include users in groups that have the permission in the result.
     """
+
+    assert not (with_group_users is True and isinstance(entity, Group)), \
+        "Entity must be a user if with_group_users is set."
 
     if not isinstance(permissions, list):
         permissions = [permissions]
@@ -383,6 +388,14 @@ def get_objects_for_entity(entity: get_user_model() | Group, permissions: list[s
         permission__codename__in=permissions,
         permission__content_type=ct,
     )
+
+    if with_group_users:
+        perms = perms | get_object_permission_model().objects.filter(
+            to_ct=ContentType.objects.get_for_model(Group),
+            to_id__in=[group.id for group in entity.groups.all()],
+            permission__codename__in=permissions,
+            permission__content_type=ct,
+        )
 
     return [perm.object for perm in perms]
 
