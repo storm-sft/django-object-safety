@@ -7,7 +7,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Permission, Group
 from django.contrib.contenttypes.models import ContentType
 
-from safety.models import ObjectPermission, ObjectGroup
+from safety.models import ObjectPermission, ObjectGroup, ObjectGroupUser
 
 
 def get_object_permission_model(obj=None):
@@ -24,7 +24,9 @@ def get_object_permission_model(obj=None):
     # pylint: disable-next=protected-access
     # noinspection PyProtectedMember
     if obj and hasattr(obj._meta, 'object_permission_model'):
-        return obj.object_permission_model
+        # pylint: disable-next=protected-access
+        # noinspection PyProtectedMember
+        return obj._meta.object_permission_model
 
     return ContentType.objects.get_model(settings.SAFETY_OBJECT_PERMISSION_MODEL) \
         if hasattr(settings, 'SAFETY_OBJECT_PERMISSION_MODEL') \
@@ -44,12 +46,32 @@ def get_object_group_model(obj=None):
 
     # pylint: disable-next=protected-access
     # noinspection PyProtectedMember
-    if obj and hasattr(obj._meta, 'object_permission_model'):
-        return obj.object_group_model
+    if obj and hasattr(obj._meta, 'object_group_model'):
+        # pylint: disable-next=protected-access
+        # noinspection PyProtectedMember
+        return obj._meta.object_group_model
 
     return ContentType.objects.get_model(settings.SAFETY_PERMISSION_GROUP_MODEL) \
         if hasattr(settings, 'SAFETY_OBJECT_GROUP_MODEL') \
         else ObjectGroup
+
+
+def get_object_group_user_model(obj=None):
+    """
+    Retrieves the object group user intermediary model. If obj is provided,
+    the Meta class of that object will be checked for a per object model.
+    """
+
+    # pylint: disable-next=protected-access
+    # noinspection PyProtectedMember
+    if obj and hasattr(obj._meta, 'object_group_user_model'):
+        # pylint: disable-next=protected-access
+        # noinspection PyProtectedMember
+        return obj._meta.object_group_user_model
+
+    return ContentType.objects.get_model(settings.SAFETY_OBJECT_GROUP_USER_MODEL) \
+        if hasattr(settings, 'SAFETY_OBJECT_GROUP_USER_MODEL') \
+        else ObjectGroupUser
 
 
 def has_perm(entities: list, perm: str, obj=None, content_type=None) -> bool:
@@ -95,9 +117,14 @@ def has_perm(entities: list, perm: str, obj=None, content_type=None) -> bool:
                                                                             object_id=obj.id).exists()
             # Check the PermissionGroup object
             if not all_have_perm:
-                all_have_perm = get_object_group_model().objects.filter(target_id=obj.id,
-                                                                        permissions__in=[permission],
-                                                                        users__in=[entity]).exists()
+                # links = ObjectPermissionLink.objects.filter(
+                #     permission_id=permission.id,
+                #     permission_ct=ContentType.objects.get_for_model(permission)
+                # )
+
+                all_have_perm = get_object_group_model(obj).objects.filter(target_id=obj.id,
+                                                                           permissions__in=[permission],
+                                                                           users__in=[entity]).exists()
         elif isinstance(entity, Group):
             all_have_perm = get_object_permission_model(obj).objects.filter(permission=permission, to_id=entity.id,
                                                                             to_ct=ContentType.objects.get_for_model(
@@ -272,7 +299,8 @@ def get_gross_perms(entity, obj=None) -> list[str]:
 
     return get_perms(entity, obj) + [perm.permission.codename for perm in get_object_group_model(obj).objects.filter(
         users__in=[entity],
-        object=obj,
+        target_id=obj.id,
+        target_ct=ContentType.objects.get_for_model(obj)
     )]
 
 
@@ -440,7 +468,8 @@ def create_object_group(name: str, permissions: list[str], obj) -> ObjectGroup:
                                                          target_ct=ct)
 
     for permission in permissions:
-        perm_group.permissions.add(Permission.objects.get_or_create(codename=permission, content_type=ct)[0].id)
+        perm = Permission.objects.get_or_create(codename=permission, content_type=ct)[0]
+        perm_group.permissions.add(perm)
 
     return perm_group
 
@@ -481,6 +510,7 @@ def add_user_to_object_group(user: get_user_model(), name: str, obj) -> bool:
 
     get_object_group_model().objects.get(name=name, target_id=obj.id,
                                          target_ct=ContentType.objects.get_for_model(obj)).users.add(user)
+
     return True
 
 

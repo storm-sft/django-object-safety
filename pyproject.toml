@@ -12,7 +12,7 @@ packages = [{ include = "safety" }]
 include = ["LICENSE"]
 
 [tool.poetry.dependencies]
-python = ">3.5"
+python = ">=3.7"
 django = ">3.2"
 
 [tool.poetry.group.dev.dependencies]

@@ -99,7 +99,7 @@ class TestObjectPermission(TransactionTestCase):
         set_perm(self.users[0], "view_fakepost", content_type=self.fake_post_ct)
         set_perm(self.users[1], "view_fakepost", content_type=self.fake_post_ct)
 
-        self.assertListEqual(get_users_with_perms("view_fakepost", content_type=self.fake_post_ct),
+        self.assertListEqual(list(get_users_with_perms("view_fakepost", content_type=self.fake_post_ct)),
                              [self.users[0], self.users[1]])
 
     def test_get_users_with_group_perms(self):
