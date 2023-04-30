@@ -3,11 +3,16 @@ from functools import reduce
 from operator import concat
 
 from django.conf import settings
+from django.contrib.admin import options
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Permission, Group
 from django.contrib.contenttypes.models import ContentType
 
 from safety.models import ObjectPermission, ObjectGroup, ObjectGroupUser
+
+if not hasattr(options, 'DEFAULT_NAMES'):
+    options.DEFAULT_NAMES = []
+options.DEFAULT_NAMES += ['schema']
 
 
 def get_object_permission_model(obj=None):
