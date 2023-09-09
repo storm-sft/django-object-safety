@@ -1,10 +1,4 @@
-import itertools
-from functools import reduce
-from operator import concat
-
 from django.conf import settings
-from django.contrib.auth import get_user_model
-from django.contrib.auth.models import Permission, Group
 from django.contrib.contenttypes.models import ContentType
 
 from safety.models import ObjectPermission, ObjectGroup
