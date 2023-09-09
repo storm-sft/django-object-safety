@@ -158,7 +158,7 @@ def set_perm(entity: get_user_model() | Group, perm: str, obj: any = None, conte
         if content_type is None:
             raise ValueError("Content type must be provided if obj is None.")
 
-        permission = Permission.objects.get_or_create(codename=perm, content_type=content_type)
+        permission = Permission.objects.get_or_create(codename=perm, content_type=content_type)[0]
 
         if isinstance(entity, get_user_model()):
             entity.user_permissions.add(
@@ -170,7 +170,7 @@ def set_perm(entity: get_user_model() | Group, perm: str, obj: any = None, conte
             )
         return True
 
-    permission = Permission.objects.get_or_create(codename=perm, content_type=ContentType.objects.get_for_model(obj))
+    permission = Permission.objects.get_or_create(codename=perm, content_type=ContentType.objects.get_for_model(obj))[0]
 
     if isinstance(entity, get_user_model()):
         get_object_permission_model(obj).objects.get_or_create(permission=permission, to_id=entity.id,
@@ -433,7 +433,7 @@ def create_object_group(name: str, permissions: list[str], obj) -> ObjectGroup:
                                                          target_ct=ContentType.objects.get_for_model(obj))
 
     for permission in permissions:
-        perm_group.permissions.add(Permission.objects.get_or_create(codename=permission))
+        perm_group.permissions.add(Permission.objects.get_or_create(codename=permission)[0])
 
     return perm_group
 

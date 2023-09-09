@@ -21,6 +21,8 @@ def boot_django():
 
         INSTALLED_APPS=[
             "safety",
+            "safety_tests",
+            "django_fake_model",
             "django.contrib.auth",
             "django.contrib.contenttypes",
         ],
