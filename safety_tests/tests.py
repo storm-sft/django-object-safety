@@ -139,6 +139,11 @@ class TestObjectPermission(TransactionTestCase):
 
 
 class TestObjectGroup(TransactionTestCase):
+    """
+    These tests focus on creating and deleting object groups, adding and removing users from groups,
+    checking permissions, and handling object deletion. The setup phase involves creating users and posts.
+    """
+
     def setUp(self):
         self.users = []
         self.users.append(get_user_model().objects.create_user(username="TestUser", password="TestPassword"))
