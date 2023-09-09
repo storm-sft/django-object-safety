@@ -1,13 +1,18 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group, Permission
 from django.contrib.contenttypes.models import ContentType
-from django.db import models
 from django.test import TransactionTestCase
-from django_fake_model import models as f
 
-from safety.utils import set_perm, has_perm, lift_perm, create_object_group, delete_object_group, \
-    add_user_to_object_group, remove_user_from_object_group, get_users_with_perms, get_groups_with_perms, \
-    retrieve_object_group, get_objects_for_entity
+from safety.object_group import add_user_to_object_group, create_object_group, remove_user_from_object_group, \
+    retrieve_object_group, delete_object_group
+from safety.perms import (
+    set_perm,
+    has_perm,
+    lift_perm,
+    get_users_with_perms,
+    get_groups_with_perms,
+    get_objects_for_entity
+)
 from safety_tests.models import FakePost
 
 
