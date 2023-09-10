@@ -19,9 +19,11 @@ def boot_django():
             }
         },
 
+        AUTH_USER_MODEL="safety_tests.RemoteUser",
+
         INSTALLED_APPS=[
-            "safety",
             "safety_tests",
+            "safety",
             "django_fake_model",
             "django.contrib.auth",
             "django.contrib.contenttypes",

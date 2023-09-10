@@ -2,14 +2,13 @@ import math
 
 import requests
 from django.conf import settings
-from django.contrib.auth.base_user import AbstractBaseUser
 from django.db import models
 from requests import JSONDecodeError, Response
 
 from service_perms.utils import UserRep
 
 
-class AbstractRemoteUser(AbstractBaseUser):
+class AbstractRemoteUser(models.Model):
     user_id = models.IntegerField()
 
     class Meta:
