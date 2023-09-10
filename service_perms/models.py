@@ -3,7 +3,7 @@ import math
 import requests
 from django.conf import settings
 from django.db import models
-from requests import JSONDecodeError, Response
+from requests import JSONDecodeError, Response, HTTPError
 
 from service_perms.utils import UserRep
 
@@ -20,8 +20,9 @@ class AbstractRemoteUser(models.Model):
         return a `settings.SAFETY_USER_REP_CLASS` object or a default UserRep object.
 
         Throws:
-            ConnectionError: If the remote service cannot be reached
-            JSONDecodeError: If the remote service returns an invalid response (not 2xx)
+            ConnectionError: The remote service cannot be reached
+            HttpError: The remote service returns an error (not 2xx)
+            HttpError: The remote service returns an invalid json response
         """
 
         try:
@@ -32,7 +33,7 @@ class AbstractRemoteUser(models.Model):
         # Ensure a 2xx status code.
         # res.ok is not sufficient as it includes 3xx codes
         if not math.floor(res.status_code / 100) != 2:
-            raise JSONDecodeError("The remote service did not return a 2xx status code")
+            raise HTTPError("The remote service did not return a 2xx status code")
 
             # try:
         cls = getattr(settings, "SAFETY_USER_REP_CLASS", UserRep)
@@ -41,7 +42,7 @@ class AbstractRemoteUser(models.Model):
             self.data = res.json()
             return self.user_factory(cls)
         except JSONDecodeError:
-            raise JSONDecodeError("The remote service did not return a valid JSON response")
+            raise HTTPError("The remote service returned an invalid JSON response")
 
     def perform_request(self) -> Response:
         """
