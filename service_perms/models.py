@@ -32,7 +32,7 @@ class AbstractRemoteUser(models.Model):
 
         # Ensure a 2xx status code.
         # res.ok is not sufficient as it includes 3xx codes
-        if not math.floor(res.status_code / 100) != 2:
+        if math.floor(res.status_code / 100) != 2:
             raise HTTPError("The remote service did not return a 2xx status code")
 
             # try:
