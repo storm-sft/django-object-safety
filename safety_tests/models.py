@@ -12,6 +12,3 @@ class FakePost(models.Model):
 
 class RemoteUser(AbstractRemoteUser):
     pass
-
-    class Meta:
-        app_label = "safety_tests"
