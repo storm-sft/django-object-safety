@@ -9,7 +9,7 @@ from service_perms.utils import UserRep
 
 
 class AbstractRemoteUser(models.Model):
-    user_id = models.IntegerField()
+    user_id = models.IntegerField(unique=True)
 
     class Meta:
         abstract = True
