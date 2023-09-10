@@ -57,6 +57,9 @@ class AbstractRemoteUser(models.Model):
     def user_factory(self, cls):
         """Set the user's data from a dictionary"""
 
-        user = cls(self.data)
+        try:
+            user = cls(self.data)
+        except TypeError as e:
+            raise ValueError("Missing required fields in the remote service response: " + str(e))
 
         return user
