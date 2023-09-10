@@ -15,6 +15,7 @@ include = ["LICENSE"]
 python = ">=3.8"
 django = "^4.2.5"
 django-fake-model = "^0.1.4"
+requests = "^2.31.0"
 
 [tool.poetry.group.dev.dependencies]
 build = "^0.10.0"
