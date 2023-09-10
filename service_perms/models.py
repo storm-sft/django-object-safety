@@ -6,11 +6,14 @@ from django.contrib.auth.base_user import AbstractBaseUser
 from django.db import models
 from requests import JSONDecodeError, Response
 
-from service_perms.utils import UserRep, user_rep_factory
+from service_perms.utils import UserRep
 
 
 class AbstractRemoteUser(AbstractBaseUser):
     user_id = models.IntegerField()
+
+    class Meta:
+        abstract = True
 
     def fetch(self) -> UserRep:
         """
@@ -36,7 +39,8 @@ class AbstractRemoteUser(AbstractBaseUser):
         cls = getattr(settings, "SAFETY_USER_REP_CLASS", UserRep)
 
         try:
-            return user_rep_factory(res.json(), cls)
+            self.data = res.json()
+            return self.user_factory(cls)
         except JSONDecodeError:
             raise JSONDecodeError("The remote service did not return a valid JSON response")
 
@@ -46,3 +50,10 @@ class AbstractRemoteUser(AbstractBaseUser):
         """
 
         return requests.get(f"{settings.SAFETY_USER_REMOTE_URL}/{self.user_id}/")
+
+    def user_factory(self, cls):
+        """Set the user's data from a dictionary"""
+
+        user = cls(self.data)
+
+        return user
