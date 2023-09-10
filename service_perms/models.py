@@ -48,6 +48,9 @@ class AbstractRemoteUser(models.Model):
         Perform the request to the remote service.
         """
 
+        if not hasattr(settings, "SAFETY_USER_REMOTE_URL"):
+            raise ValueError("The SAFETY_USER_REMOTE_URL setting is not set")
+
         return requests.get(f"{settings.SAFETY_USER_REMOTE_URL}/{self.user_id}/")
 
     def user_factory(self, cls):
