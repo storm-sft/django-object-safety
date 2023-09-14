@@ -8,7 +8,15 @@ from requests import JSONDecodeError, Response, HTTPError
 from service_perms.utils import UserRep
 
 
+def get_user_rep_class():
+    return getattr(settings, "SAFETY_USER_REP_CLASS", UserRep)
+
+
 class AbstractRemoteUser(models.Model):
+    # Required by Django
+    REQUIRED_FIELDS = []
+    USERNAME_FIELD = 'user_id'
+
     user_id = models.IntegerField(unique=True)
 
     class Meta:
@@ -35,8 +43,7 @@ class AbstractRemoteUser(models.Model):
         if math.floor(res.status_code / 100) != 2:
             raise HTTPError("The remote service did not return a 2xx status code")
 
-            # try:
-        cls = getattr(settings, "SAFETY_USER_REP_CLASS", UserRep)
+        cls = get_user_rep_class()
 
         try:
             self.data = res.json()
@@ -58,8 +65,11 @@ class AbstractRemoteUser(models.Model):
         """Set the user's data from a dictionary"""
 
         try:
-            user = cls(self.data)
+            user = cls(**self.extract_data())
         except TypeError as e:
             raise ValueError("Missing required fields in the remote service response: " + str(e))
 
         return user
+
+    def extract_data(self):
+        return {key: value for key, value in self.data.items() if key in get_user_rep_class().__annotations__}

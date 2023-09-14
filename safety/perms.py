@@ -1,4 +1,5 @@
 import itertools
+import warnings
 from functools import reduce
 from operator import concat
 
@@ -30,12 +31,14 @@ def has_perm(entities: list, perm: str, obj=None, content_type=None) -> bool:
     for index, entity in enumerate(entities):
         if index == 0:
             all_have_perm = True
-        if not all_have_perm or not entity.is_active:
+        if not all_have_perm or not getattr(entity, "is_active", True):
             return False
-        if entity.is_superuser:
+        if getattr(entity, "is_superuser", False):
             continue
-        if not entity.is_authenticated:
+        if not getattr(entity, "is_authenticated", True):
             return False
+        if not hasattr(entity, "is_authenticated"):
+            warnings.warn("The entity does not have an is_authenticated attribute, assuming True.")
         if obj is None:
             all_have_perm = entity.user_permissions.filter(codename=perm, content_type=content_type).exists()
             continue
@@ -85,10 +88,14 @@ def has_gross_perm(users: list[get_user_model()], perm: str, obj=None) -> bool:
         return False
 
     for user in users:
-        for group in user.groups.all():
-            if has_perm(group, perm, obj):
-                return True
-        for group in get_object_group_model().objects.filter(users__in=[user], obj=obj):
+        if hasattr(user, "groups"):
+            for group in user.groups.all():
+                if has_perm(group, perm, obj):
+                    return True
+        else:
+            warnings.warn("The user does not have a groups attribute, assuming no model level groups.")
+        for group in get_object_group_model().objects.filter(users__in=[user], target_id=obj.id,
+                                                             target_ct=ContentType.objects.get_for_model(obj)):
             if has_perm(group, perm, obj):
                 return True
 
