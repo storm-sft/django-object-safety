@@ -5,4 +5,4 @@ from django.core.management import call_command
 from boot_django import boot_django
 
 boot_django()
-call_command("makemigrations", "safety", *sys.argv[1:])
+call_command("makemigrations", *sys.argv[1:])

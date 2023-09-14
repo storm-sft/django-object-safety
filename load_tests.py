@@ -7,7 +7,7 @@ from boot_django import boot_django
 
 boot_django()
 
-default_labels = ["safety", ]
+default_labels = ["safety_tests", ]
 
 
 def get_suite(test_labels=None):

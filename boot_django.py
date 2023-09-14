@@ -19,8 +19,12 @@ def boot_django():
             }
         },
 
+        SAFETY_USER_REMOTE_URL="https://jsonplaceholder.typicode.com/users",
+
         INSTALLED_APPS=[
             "safety",
+            "safety_tests",
+            "django_fake_model",
             "django.contrib.auth",
             "django.contrib.contenttypes",
         ],
